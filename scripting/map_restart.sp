@@ -62,13 +62,19 @@ stock void ResetupTimer()
 public Action Timer_Check(Handle hTimer, any data)
 {
     // Check if we need to restart the map/server.
-    if (!NeedsRestart() || !g_cvRestartOnEmpty.BoolValue)
+    if (!NeedsRestart())
     {
         return Plugin_Continue;
     }
 
     // Retrieve real client count.
     int cl_cnt = GetClientCountCustom();
+
+    // If restart when empty is on, check client count.
+    if (g_cvRestartOnEmpty.BoolValue && cl_cnt > 0)
+    {
+        return Plugin_Continue;
+    }
 
     // If client count is below 1, restart map or server.
     if (cl_cnt < 1)
@@ -77,6 +83,7 @@ public Action Timer_Check(Handle hTimer, any data)
         {
             LogMessage("%s Found time to trigger map/server restart.", PLUGIN_TAG);
         }
+
         if (g_cvRestartType.IntValue == 0)
         {
             char map_name[MAX_NAME_LENGTH];
@@ -111,13 +118,7 @@ stock bool NeedsRestart()
         return false;
     }
 
-    // If below 1, we need to restart the map/server.
-    if (time_left < 1)
-    {
-        return true;
-    }
-
-    return false;
+    return time_left < 1;
 }
 
 stock int GetClientCountCustom()
